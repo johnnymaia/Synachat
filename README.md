@@ -95,4 +95,4 @@ Este projeto é de uso educacional e experimental. Para uso comercial ou redistr
 
 ## 👨‍💻 Desenvolvido por
 
-- Ted Silva e equipe
+- Andrey/Johnny/Matheus 
