@@ -2,6 +2,7 @@ import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import time
+import unicodedata
 
 # Importa a função de scraping do novo arquivo
 from web_scraper import obter_conteudo_jp
@@ -35,6 +36,7 @@ Principais tópicos relacionados:
 
 # =============== FUNÇÕES DO CHATBOT ===============
 
+
 def verificar_tema_pergunta(pergunta):
     """Verifica se a pergunta está relacionada ao Jovem Programador"""
     prompt = f"""
@@ -60,6 +62,7 @@ def verificar_tema_pergunta(pergunta):
     except Exception as e:
         print(f"[ERRO] Falha na verificação de tema: {str(e)}")
         return False
+
 
 def gerar_resposta(pergunta, conteudo_site):
     """Gera resposta baseada no contexto do Jovem Programador"""
@@ -93,13 +96,23 @@ def gerar_resposta(pergunta, conteudo_site):
         print(f"[ERRO] Falha ao gerar resposta: {str(e)}")
         return "Desculpe, ocorreu um erro ao processar sua pergunta. Por favor, tente novamente mais tarde."
 
+
+def remover_acentos(texto):
+    """Remove acentuação de um texto para facilitar a análise"""
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', texto)
+        if unicodedata.category(c) != 'Mn'
+    )
+
 # =============== PROGRAMA PRINCIPAL ===============
+
 
 def main():
     # Inicialização
     print("\n" + "="*60)
-    print("ASSISTENTE VIRTUAL SYNA - JOVEM PROGRAMADOR")
+    print("ASSISTENTE VIRTUAL SYNA - JOVEM PROGRAMADOR".center(60))
     print("="*60)
+
     print("Sou a Syna, sua assistente para o programa Jovem Programador!")
     print("Carregando informações atualizadas... Por favor aguarde.")
 
@@ -123,24 +136,26 @@ def main():
                 continue
 
             if mensagem_usuario.lower() in ["sair", "exit", "bye", "tchau", "encerrar"]:
-                print("\nSyna: Até logo! Qualquer dúvida sobre o Jovem Programador, estou à disposição.")
+                print(
+                    "\nSyna: Até logo! Qualquer dúvida sobre o Jovem Programador, estou à disposição.")
                 break
 
-            # Verificar tema antes de processar
-            if not verificar_tema_pergunta(mensagem_usuario):
-                print("\nSyna: Desculpe, só posso responder perguntas sobre o curso Jovem Programador.")
-                print("Syna: Posso te ajudar com informações sobre: inscrições, conteúdo do curso, oportunidades ou hackathons?")
+            # Normaliza a mensagem removendo acentos para análise de tema
+            mensagem_normalizada = remover_acentos(mensagem_usuario.lower())
+
+            if not verificar_tema_pergunta(mensagem_normalizada):
+                print(
+                    "\nSyna: Desculpe, só posso responder perguntas sobre o curso Jovem Programador.")
+                print(
+                    "Syna: Posso te ajudar com informações sobre: inscrições, conteúdo do curso, oportunidades ou hackathons?")
                 print("-"*60)
                 continue
 
-            # Gerar resposta contextualizada
             print("Syna: Processando sua pergunta...")
             resposta = gerar_resposta(mensagem_usuario, conteudo_site)
 
-            # Registrar no histórico
             historico.append({"usuario": mensagem_usuario, "bot": resposta})
 
-            # Exibir resposta formatada
             print("\nSyna:", resposta)
             print("-"*60)
 
@@ -151,6 +166,7 @@ def main():
             print(f"\n[ERRO] Ocorreu um problema: {str(e)}")
             print("Syna: Desculpe, tive um problema. Por favor, reformule sua pergunta.")
             print("-"*60)
+
 
 if __name__ == "__main__":
     main()
